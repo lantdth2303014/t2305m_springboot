@@ -1,6 +1,8 @@
 package com.example.t2305m_springboot.service;
 
+import com.example.t2305m_springboot.dto.req.CancelOrderReq;
 import com.example.t2305m_springboot.dto.req.OrderReq;
+import com.example.t2305m_springboot.dto.req.UpOrderStatReq;
 import com.example.t2305m_springboot.entity.Order;
 import com.example.t2305m_springboot.entity.OrderItem;
 import com.example.t2305m_springboot.entity.Product;
@@ -23,19 +25,19 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(OrderReq orderReq){
+    public Order createOrder(OrderReq orderReq) {
         Order order = new Order();
         order.setGrandTotal(0.0);
         List<OrderItem> items = orderReq.getItems().stream().map(
-                item-> {
+                item -> {
                     OrderItem orderItem = new OrderItem();
                     orderItem.setProductId(item.getProductId());
                     orderItem.setQty(item.getQty());
                     Product p = productRepository.findById(item.getProductId()).orElseThrow(
-                            ()-> new RuntimeException("Product not found: "+item.getProductId())
+                            () -> new RuntimeException("Product not found: " + item.getProductId())
                     );
-                    if(p.getQty() < item.getQty())
-                        throw new RuntimeException("Insufficient stock for product: "+p.getName());
+                    if (p.getQty() < item.getQty())
+                        throw new RuntimeException("Insufficient stock for product: " + p.getName());
                     p.setQty(p.getQty() - item.getQty());
                     productRepository.save(p);
                     orderItem.setPrice(p.getPrice());
@@ -48,6 +50,26 @@ public class OrderService {
         order.setCreateAt(new Date());
         order.setShippingAddress(orderReq.getShippingAddress());
         order.setTelephone(orderReq.getTelephone());
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order updateOrderStatus(UpOrderStatReq request) {
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found: " + request.getOrderId()));
+        order.setStatus(request.getStatus());
+        return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order cancelOrder(CancelOrderReq request) {
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found: " + request.getOrderId()));
+        if (order.getStatus() == 0L) {
+            throw new RuntimeException("Order is already canceled.");
+        }
+        order.setStatus(0L); // Assuming '0' represents 'Canceled' status
+        order.setCancellationReason(request.getCancellationReason());
         return orderRepository.save(order);
     }
 }
