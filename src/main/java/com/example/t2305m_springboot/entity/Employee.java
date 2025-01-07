@@ -13,6 +13,9 @@ public class Employee {
     private String department;
     private Double salary;
 
+    public void setId(Long id) {
+    }
+
     // Getters and Setters
     // (Generated using IDE or Lombok for brevity)
 }
