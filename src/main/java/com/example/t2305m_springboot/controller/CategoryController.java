@@ -2,9 +2,10 @@ package com.example.t2305m_springboot.controller;
 
 import com.example.t2305m_springboot.dto.req.CategoryReq;
 import com.example.t2305m_springboot.dto.res.CategoryRes;
-import com.example.t2305m_springboot.entity.Category;
 import com.example.t2305m_springboot.service.CategoryService;
+import com.example.t2305m_springboot.service.RabbitMQProducer;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,11 +14,15 @@ import java.util.List;
 @RequestMapping("/api/v1/category")
 public class CategoryController {
     private CategoryService categoryService;
-    public CategoryController(CategoryService categoryService) {
+    private final RabbitMQProducer producer;
+    public CategoryController(CategoryService categoryService, RabbitMQProducer producer) {
         this.categoryService = categoryService;
+        this.producer = producer;
     }
     @GetMapping()
+    @PreAuthorize("hasAnyAuthority('category')")
     public List<CategoryRes> getAllCategory(){
+        producer.sendMessage("Vừa gửi 1 thông báo sang bên RabbitMQ");
         return categoryService.all();
     }
 

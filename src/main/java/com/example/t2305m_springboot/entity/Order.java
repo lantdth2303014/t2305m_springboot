@@ -87,14 +87,4 @@ public class Order {
     public void setItems(List<OrderItem> items) {
         this.items = items;
     }
-
-    private String cancellationReason; // New field for cancellation reason
-
-    public String getCancellationReason() {
-        return cancellationReason;
-    }
-
-    public void setCancellationReason(String cancellationReason) {
-        this.cancellationReason = cancellationReason;
-    }
 }
